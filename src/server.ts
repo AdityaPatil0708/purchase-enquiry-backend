@@ -1,11 +1,16 @@
 import express from "express"
 import dotenv from "dotenv"
+import dbConnect from "./db/dbConnect.js"
+import userRoutes from "./routes/userRoute.js"
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 
-const PORT = process.env.PORT;
+app.use("/api/auth", userRoutes)
 
-app.listen(()=>console.log(`Server listening on ${PORT}`))
+const PORT = process.env.PORT || 5000;
+dbConnect();
+
+app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`))
