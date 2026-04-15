@@ -1,1 +1,1 @@
-{"root":["./src/server.ts","./src/controllers/usercontroller.ts","./src/db/dbconnect.ts","./src/models/usermodel.ts","./src/routes/userroute.ts"],"version":"6.0.2"}
+{"root":["./src/server.ts","./src/controllers/enquirycontroller.ts","./src/controllers/usercontroller.ts","./src/db/dbconnect.ts","./src/middlewares/authmiddleware.ts","./src/models/enquirymodel.ts","./src/models/usermodel.ts","./src/routes/enquiryroute.ts","./src/routes/userroute.ts","./src/scripts/seedusers.ts"],"version":"6.0.2"}
