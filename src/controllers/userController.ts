@@ -4,6 +4,56 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
 /**
+ * POST /api/auth/signup
+ * Create a new user with name, email, and password.
+ */
+export async function signup(req: Request, res: Response): Promise<void> {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      res.status(400).json({
+        success: false,
+        message: "User already exists.",
+      });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({
+      name,
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User signed up successfully.",
+      user: {
+        id: newUser._id.toString(),
+        name: newUser.name,
+        email: newUser.email,
+      },
+    });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+}
+
+/**
  * POST /api/auth/login
  * Authenticate user with email + password. Returns JWT token.
  */
