@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
@@ -28,11 +27,10 @@ export async function signup(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       name,
       email: email.toLowerCase().trim(),
-      password: hashedPassword,
+      password,
     });
 
     res.status(201).json({
@@ -80,7 +78,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     // Verify password
-    const isMatch = await bcrypt.compare(password, user.password as string);
+    const isMatch = password === user.password;
     if (!isMatch) {
       res.status(401).json({
         success: false,

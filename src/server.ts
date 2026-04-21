@@ -12,7 +12,7 @@ const app = express();
 // CORS — allow frontend origin
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "https://purchase-enquiry-tracker.vercel.app/",
+    origin: process.env.FRONTEND_URL || "http://13.53.50.161:3000",
     credentials: true,
   })
 );
