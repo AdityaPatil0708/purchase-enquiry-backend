@@ -352,3 +352,52 @@ export async function reviewDeal(req: Request, res: Response): Promise<void> {
     });
   }
 }
+
+export async function deleteEnquiry(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const enquiry = await Enquiry.findById(req.params["id"]);
+
+    if (!enquiry) {
+      res.status(404).json({
+        success: false,
+        message: "Enquiry not found.",
+      });
+      return;
+    }
+
+    if (enquiry.closed) {
+      res.status(400).json({
+        success: false,
+        message: "Cannot delete a closed deal.",
+      });
+      return;
+    }
+
+    const isAdmin = req.user?.role === "admin";
+    const isOwner = enquiry.createdBy.toString() === req.user!.userId;
+
+    if (!isAdmin && !isOwner) {
+      res.status(403).json({
+        success: false,
+        message: "You are not authorised to delete this enquiry.",
+      });
+      return;
+    }
+
+    await enquiry.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Enquiry deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete enquiry error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+}
