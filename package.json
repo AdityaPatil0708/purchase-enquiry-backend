@@ -4,8 +4,7 @@
   "description": "Backend API for Purchase Enquiry Tracker",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsc -b && node dist/server.js",
-    "seed": "tsx src/scripts/seedUsers.ts"
+    "dev": "tsc -b && node dist/server.js"
   },
   "keywords": [],
   "author": "",

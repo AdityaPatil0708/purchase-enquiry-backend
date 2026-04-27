@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+const ROLES = ["user", "admin"] as const;
+export type UserRole = (typeof ROLES)[number];
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -17,6 +20,11 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    role: {
+      type: String,
+      enum: ROLES,
+      default: "user",
     },
   },
   {

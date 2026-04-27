@@ -4,25 +4,22 @@ const RATE_STATUSES = ["received", "not_received", "not_available"] as const;
 const UNIT_TYPES = [
   "Kgs",
   "Barrels",
-  "Litres",
-  "Tonnes",
-  "Units",
-  "Boxes",
-  "Bags",
-  "Pieces",
-  "Meters",
-  "MT",
 ] as const;
+
+// Admin can approve or reject a closed deal, or it stays "pending" review
+const ADMIN_STATUSES = ["pending", "approved", "rejected"] as const;
 
 export type RateStatus = (typeof RATE_STATUSES)[number];
 export type UnitType = (typeof UNIT_TYPES)[number];
+export type AdminStatus = (typeof ADMIN_STATUSES)[number];
 
 export interface IVendorQuote {
   vendor: string;
   brand?: string;
   rateStatus: RateStatus;
   rate: number | null;
-  qty: number;
+  enquiredQty: number;
+  availableQty: number;
   unit: UnitType;
   remark?: string;
 }
@@ -32,8 +29,16 @@ export interface IEnquiry extends Document {
   date: string;
   vendors: (IVendorQuote & { _id: mongoose.Types.ObjectId })[];
   closed: boolean;
-  closedVendorIdx: number | null;
+  /** Indices selected by the user — awaiting admin approval */
+  pendingVendorIdxs: number[];
+  /** Indices finalised after admin approves */
+  closedVendorIdxs: number[];
   createdBy: mongoose.Types.ObjectId;
+  // Admin review fields
+  adminStatus: AdminStatus;
+  adminRemark?: string;
+  reviewedBy?: mongoose.Types.ObjectId | null;
+  reviewedAt?: Date | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,7 +59,8 @@ const vendorQuoteSchema = new mongoose.Schema(
       default: "not_received",
     },
     rate: { type: Number, default: null },
-    qty: { type: Number, required: true, default: 0 },
+    enquiredQty: { type: Number, required: true, default: 0 },
+    availableQty: { type: Number, required: true, default: 0 },
     unit: { type: String, enum: UNIT_TYPES, required: true, default: "Kgs" },
     remark: { type: String, trim: true, default: "" },
   },
@@ -69,12 +75,26 @@ const enquirySchema = new mongoose.Schema(
     date: { type: String, required: true },
     vendors: [vendorQuoteSchema],
     closed: { type: Boolean, default: false },
-    closedVendorIdx: { type: Number, default: null },
+    pendingVendorIdxs: { type: [Number], default: [] },
+    closedVendorIdxs: { type: [Number], default: [] },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    // Admin review — only relevant once a deal is closed
+    adminStatus: {
+      type: String,
+      enum: ADMIN_STATUSES,
+      default: "pending",
+    },
+    adminRemark: { type: String, trim: true, default: "" },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    reviewedAt: { type: Date, default: null },
   },
   {
     timestamps: true,
