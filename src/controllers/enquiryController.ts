@@ -8,7 +8,7 @@ import Enquiry from "../models/enquiryModel.js";
  */
 export async function createEnquiry(
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     if (req.user?.role === "admin") {
@@ -71,7 +71,7 @@ export async function createEnquiry(
  */
 export async function getAllEnquiries(
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     const isAdmin = req.user?.role === "admin";
@@ -109,7 +109,7 @@ export async function getAllEnquiries(
  */
 export async function getEnquiryById(
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     const enquiry = await Enquiry.findById(req.params["id"]);
@@ -140,10 +140,7 @@ export async function getEnquiryById(
  * Regular user selects vendor(s) for admin review.
  * Saves to pendingVendorIdxs — deal stays OPEN until admin approves.
  */
-export async function selectVendor(
-  req: Request,
-  res: Response
-): Promise<void> {
+export async function selectVendor(req: Request, res: Response): Promise<void> {
   try {
     if (req.user?.role === "admin") {
       res.status(403).json({
@@ -158,7 +155,8 @@ export async function selectVendor(
     if (!Array.isArray(vendorIdxs) || vendorIdxs.length === 0) {
       res.status(400).json({
         success: false,
-        message: "vendorIdxs (array of numbers) is required and cannot be empty.",
+        message:
+          "vendorIdxs (array of numbers) is required and cannot be empty.",
       });
       return;
     }
@@ -223,7 +221,7 @@ export async function selectVendor(
  */
 export async function reopenEnquiry(
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     if (req.user?.role === "admin") {
@@ -352,10 +350,70 @@ export async function reviewDeal(req: Request, res: Response): Promise<void> {
     });
   }
 }
+/**
+ * PATCH /api/enquiries/:id/vendors/:vendorId
+ * Edit a vendor quote on an open deal. (admin + user)
+ */
+export async function updateVendor(req: Request, res: Response): Promise<void> {
+  try {
+    const enquiry = await Enquiry.findById(req.params["id"]);
+
+    if (!enquiry) {
+      res.status(404).json({ success: false, message: "Enquiry not found." });
+      return;
+    }
+
+    if (enquiry.closed) {
+      res
+        .status(400)
+        .json({ success: false, message: "Cannot edit a closed deal." });
+      return;
+    }
+
+    const vendor = enquiry.vendors.find(
+      (v) => v._id.toString() === req.params["vendorId"],
+    );
+
+    if (!vendor) {
+      res.status(404).json({ success: false, message: "Vendor not found." });
+      return;
+    }
+
+    const {
+      vendor: vendorName,
+      brand,
+      rateStatus,
+      rate,
+      enquiredQty,
+      availableQty,
+      unit,
+      remark,
+    } = req.body;
+
+    if (vendorName !== undefined) vendor.vendor = vendorName.trim();
+    if (brand !== undefined) vendor.brand = brand.trim();
+    if (rateStatus !== undefined) vendor.rateStatus = rateStatus;
+    if (rate !== undefined)
+      vendor.rate = rateStatus === "received" ? rate : null;
+    if (enquiredQty !== undefined) vendor.enquiredQty = enquiredQty;
+    if (availableQty !== undefined) vendor.availableQty = availableQty;
+    if (unit !== undefined) vendor.unit = unit;
+    if (remark !== undefined) vendor.remark = remark.trim();
+
+    await enquiry.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Vendor updated.", enquiry });
+  } catch (error) {
+    console.error("Update vendor error:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+}
 
 export async function deleteEnquiry(
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     const enquiry = await Enquiry.findById(req.params["id"]);

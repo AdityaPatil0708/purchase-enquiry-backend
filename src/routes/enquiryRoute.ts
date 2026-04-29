@@ -8,6 +8,7 @@ import {
   reopenEnquiry,
   reviewDeal,
   deleteEnquiry,
+  updateVendor
 } from "../controllers/enquiryController.js";
 
 const router: Router = express.Router();
@@ -21,8 +22,10 @@ router.get("/:id", getEnquiryById);
 router.patch("/:id/select", selectVendor);
 router.patch("/:id/reopen", reopenEnquiry);
 router.delete("/:id", deleteEnquiry);  
+router.patch("/:id/vendors/:vendorId", updateVendor);
 
 // ── Admin-only routes ──────────────────────────────────────────
 router.patch("/:id/review", adminMiddleware, reviewDeal);
+
 
 export default router;
