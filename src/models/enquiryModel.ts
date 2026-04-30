@@ -34,6 +34,8 @@ export interface IEnquiry extends Document {
   /** Indices finalised after admin approves */
   closedVendorIdxs: number[];
   createdBy: mongoose.Types.ObjectId;
+  /** Marks the enquiry as Purchase Order ready */
+  poReady: boolean;
   // Admin review fields
   adminStatus: AdminStatus;
   adminRemark?: string;
@@ -77,6 +79,7 @@ const enquirySchema = new mongoose.Schema(
     closed: { type: Boolean, default: false },
     pendingVendorIdxs: { type: [Number], default: [] },
     closedVendorIdxs: { type: [Number], default: [] },
+    poReady: { type: Boolean, default: false },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

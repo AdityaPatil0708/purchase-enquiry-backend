@@ -253,6 +253,7 @@ export async function reopenEnquiry(
     enquiry.closed = false;
     enquiry.pendingVendorIdxs = [];
     enquiry.closedVendorIdxs = [];
+    enquiry.poReady = false;
     enquiry.adminStatus = "pending";
     enquiry.adminRemark = "";
     enquiry.reviewedBy = undefined;
@@ -407,6 +408,47 @@ export async function updateVendor(req: Request, res: Response): Promise<void> {
       .json({ success: true, message: "Vendor updated.", enquiry });
   } catch (error) {
     console.error("Update vendor error:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+}
+
+/**
+ * PATCH /api/enquiries/:id/po-ready
+ * Toggle the PO-ready flag on any enquiry. (admin + user)
+ */
+export async function togglePoReady(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const enquiry = await Enquiry.findById(req.params["id"]);
+
+    if (!enquiry) {
+      res.status(404).json({ success: false, message: "Enquiry not found." });
+      return;
+    }
+
+    const isAdmin = req.user?.role === "admin";
+    const isOwner = enquiry.createdBy.toString() === req.user!.userId;
+
+    if (!isAdmin && !isOwner) {
+      res.status(403).json({
+        success: false,
+        message: "You are not authorised to update this enquiry.",
+      });
+      return;
+    }
+
+    enquiry.poReady = !enquiry.poReady;
+    await enquiry.save();
+
+    res.status(200).json({
+      success: true,
+      message: `PO ready marked as ${enquiry.poReady}.`,
+      enquiry,
+    });
+  } catch (error) {
+    console.error("Toggle PO ready error:", error);
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 }
