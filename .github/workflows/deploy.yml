@@ -17,8 +17,8 @@ jobs:
           script: |
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd ~/purchase-enquiry-frontend
+            cd ~/purchase-enquiry-backend
             git pull origin main
             npm install
-            npm run dev
+            npm run build
             pm2 reload purchase-backend
