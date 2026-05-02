@@ -501,3 +501,44 @@ export async function deleteEnquiry(
     });
   }
 }
+
+/**
+ * PATCH /api/enquiries/:id/user-remark
+ * Save a freeform remark left by the regular user. (user only)
+ */
+export async function updateUserRemark(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (req.user?.role === "admin") {
+      res.status(403).json({
+        success: false,
+        message: "Admins cannot leave a user remark.",
+      });
+      return;
+    }
+
+    const { remark } = req.body as { remark?: string };
+
+    if (typeof remark !== "string") {
+      res.status(400).json({ success: false, message: "remark must be a string." });
+      return;
+    }
+
+    const enquiry = await Enquiry.findById(req.params["id"]);
+
+    if (!enquiry) {
+      res.status(404).json({ success: false, message: "Enquiry not found." });
+      return;
+    }
+
+    enquiry.userRemark = remark.trim();
+    await enquiry.save();
+
+    res.status(200).json({ success: true, message: "Remark saved.", enquiry });
+  } catch (error) {
+    console.error("Update user remark error:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+}

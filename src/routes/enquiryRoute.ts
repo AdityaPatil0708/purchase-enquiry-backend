@@ -10,6 +10,7 @@ import {
   deleteEnquiry,
   updateVendor,
   togglePoReady,
+  updateUserRemark
 } from "../controllers/enquiryController.js";
 
 const router: Router = express.Router();
@@ -24,6 +25,7 @@ router.patch("/:id/select", selectVendor);
 router.patch("/:id/reopen", reopenEnquiry);
 router.delete("/:id", deleteEnquiry);  
 router.patch("/:id/vendors/:vendorId", updateVendor);
+router.patch("/:id/user-remark", updateUserRemark);
 router.patch("/:id/po-ready", togglePoReady);
 
 // ── Admin-only routes ──────────────────────────────────────────

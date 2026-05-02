@@ -42,6 +42,8 @@ export interface IEnquiry extends Document {
   adminRemark?: string;
   reviewedBy?: mongoose.Types.ObjectId | null;
   reviewedAt?: Date | null;
+  /** Freeform remark left by the regular user on this enquiry */
+  userRemark?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,6 +101,7 @@ const enquirySchema = new mongoose.Schema(
       default: null,
     },
     reviewedAt: { type: Date, default: null },
+    userRemark: { type: String, trim: true, default: "" },
   },
   {
     timestamps: true,
