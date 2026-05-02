@@ -18,10 +18,11 @@ export interface IVendorQuote {
   brand?: string;
   rateStatus: RateStatus;
   rate: number | null;
-  enquiredQty: number;
-  availableQty: number;
+  enquiredQty: string;
+  availableQty: string;
   unit: UnitType;
   remark?: string;
+  availableQtyMax?: number | null
 }
 
 export interface IEnquiry extends Document {
@@ -61,8 +62,8 @@ const vendorQuoteSchema = new mongoose.Schema(
       default: "not_received",
     },
     rate: { type: Number, default: null },
-    enquiredQty: { type: Number, required: true, default: 0 },
-    availableQty: { type: Number, required: true, default: 0 },
+    enquiredQty: { type: String, required: true, default: 0 },
+    availableQty: { type: String, required: true, default: 0 },
     unit: { type: String, enum: UNIT_TYPES, required: true, default: "Kgs" },
     remark: { type: String, trim: true, default: "" },
   },
